@@ -63,20 +63,21 @@ export default class DelugeTorrent extends Torrent<Options> {
       }
 
       const delta = diff.diff(newProps, this.props);
-
-      this.props = newProps;
       
-      delta.forEach(({kind, path: [key], rhs: value, lhs}) => {
-        if (key === 'progress') {
-          this.emit('progress', value);
-        }
-        if (key === 'state') {
-          if (value === 'Seeding' && lhs === 'Downloading') this.emit('finish');
-          if (value === 'Paused'  && lhs !== 'Stopped') this.emit('pause');
-          if (value === 'Stopped' && lhs !== 'Finish') this.emit('stop');
-        }
-      });
-
+      this.props = newProps;
+      if (delta) { 
+        delta.forEach(({kind, path: [key], lhs: value, rhs: old}) => {
+          if (key === 'progress') {
+            this.emit('progress', value);
+          }
+          if (key === 'status') {
+            if (value === 'seeding' && old === 'downloading') this.emit('finish');
+            if (value === 'paused'  && old !== 'stopped') this.emit('pause');
+            if (value === 'downloading' && old === 'paused') this.emit('resume');
+            if (value === 'stopped' && old !== 'finish') this.emit('stop');
+          }
+        });
+      }   
     }, polling);
 
   }
@@ -99,8 +100,15 @@ export default class DelugeTorrent extends Torrent<Options> {
    
     this.props = newProps;
   }
-  pause(): Promise<void> {
-    throw new Error("Method not implemented.");
+  async pause(): Promise<void> {
+    const req = new Request(this.opts);
+    req.add('paused', 'core.pause_torrent', [[this._hash]]);
+    await req.send();
+  }
+  async resume(): Promise<void> {
+    const req = new Request(this.opts);
+    req.add('paused', 'core.resume_torrent', [[this._hash]]);
+    await req.send();
   }
   async remove (deleteData: boolean): Promise<void> {
     const req = new Request(this.opts);

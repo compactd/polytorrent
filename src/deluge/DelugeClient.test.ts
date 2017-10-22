@@ -42,6 +42,7 @@ test('DelugeClient.addFiles() - adds torrents', async (t) => {
   });
 
   t.is(torrents.length, 2, 'should return 2 torrents');
+  
   t.is(torrents[0].hash, '9228628504cc40efa57bf38e85c9e3bd2c572b5b', 'should have the right hashes');
   t.is(torrents[1].hash, '40448d478d9203a3919b0900e7fbb9e8748dcdf9', 'should have the right hashes')
 
@@ -70,26 +71,33 @@ test('DelugeTorrent.liveFeed() - emits events', async (t) => {
 
   await client.connect();
   const torrent = await client.getTorrent(hash);
-
-  console.log(torrent);
   
-  const pauseStub = sinon.stub();
-  torrent.on('pause', pauseStub);
-  torrent.liveFeed(100);
+  // torrent.on('progress', (p) => console.log(p));
+  torrent.on('resume', () => {
+    
+    t.pass("'resume' called");
+    torrent.on('finish', () => {
+      t.pass("'finish' called");
+      t.end();
+    })
+  });
+  torrent.on('pause', () => {
+    t.pass("'pause' called");
+    setTimeout(() => {
+      torrent.resume();
+    }, 600)
+  });
 
-  await timeout(200);
+  torrent.liveFeed(200);
 
-  await torrent.pause();
-
-  await timeout(200);
-
-  t.is(pauseStub.calledOnce, true, 'Paused called');
-  t.end();
+  await timeout(500);
+  torrent.pause();
 });
 
 test('DelugeTorrent.remove() - removes torrents with data', async (t) => {
   const readdir = util.promisify(fs.readdir);
   const unlink  = util.promisify(fs.unlink);
+  const timeout = util.promisify(setTimeout);
 
   const client = new DelugeClient({host: 'localhost', port: 8112, password: 'deluge'});
 
@@ -98,10 +106,16 @@ test('DelugeTorrent.remove() - removes torrents with data', async (t) => {
   const torrents = await client.getTorrents();
   t.is(torrents.length, 2, 'should return all the torrents');
 
+  const stub = sinon.stub();
+  torrents[0].on('remove', stub);
+  torrents[0].liveFeed();
+
   await Promise.all(torrents.map((t) => t.remove(true)));
 
   const emptyTorrents = await client.getTorrents();
   t.is(emptyTorrents.length, 0, 'should return no torrents once removed');
+
+  await timeout(3200);
 
   const target = path.join(__dirname, '../../torrents/target');
   const temp = path.join(__dirname, '../../torrents/temp');
@@ -114,5 +128,6 @@ test('DelugeTorrent.remove() - removes torrents with data', async (t) => {
   const ops = temps.filter((f) => f !== '.gitignore').map((f) => unlink(path.join(temp, f)));
   await Promise.all(ops);
 
+  t.true(stub.calledOnce, "'removed' called");
   t.end();
 });

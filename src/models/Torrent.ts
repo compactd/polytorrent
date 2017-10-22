@@ -20,7 +20,7 @@ export default abstract class Torrent<T> extends EventEmitter{
   constructor (opts: T, hash: string, props: TorrentProps) {
     super();
     this.opts = opts;
-    this._hash || hash;
+    this._hash = hash;
     this.props = props;
   }
   on (event: 'error', listener: () => void): this;
@@ -28,10 +28,10 @@ export default abstract class Torrent<T> extends EventEmitter{
   on (event: 'remove', listener: () => void): this;
   on (event: 'stop', listener: () => void): this;
   on (event: 'pause', listener: () => void): this;
+  on (event: 'resume', listener: () => void): this;
   on (event: 'progress', listener: (progress: number) => void): this;
   on (event: string, listener: (...args: any[]) => void): this {
     super.on(event, listener);
-
     return this;
   }
   emit (event: 'error'): boolean;
@@ -39,9 +39,12 @@ export default abstract class Torrent<T> extends EventEmitter{
   emit (event: 'remove'): boolean;
   emit (event: 'stop'): boolean;
   emit (event: 'pause'): boolean;
+  emit (event: 'resume'): boolean;
   emit (event: 'progress', progress: number): boolean;
   emit (event: string, ...args: any[]): boolean {
-    return super.emit(event, ...args);
+    const res = super.emit(event, ...args);
+    return res;
+    
   }
   abstract liveFeed (polling: number): void;
   /**
@@ -50,6 +53,8 @@ export default abstract class Torrent<T> extends EventEmitter{
   abstract update (): Promise<void>;
 
   abstract pause (): Promise<void>;
+
+  abstract resume (): Promise<void>;
 
   abstract remove (deleteData: boolean): Promise<void>;
   

@@ -96,6 +96,7 @@ export default class DelugeClient extends Client<Options> {
         const content = await readFile(target, {encoding: null});
         hash = parseTorrent(content).infoHash;
       }
+      
   
       request.add(hash || 'addFile_' + index, 'web.add_torrents', [[{
         path: target,
@@ -108,6 +109,7 @@ export default class DelugeClient extends Client<Options> {
     const res = await request.send();
 
     return Object.keys(res).map((hash) => {
+      
       if (!res[hash]) throw new ClientError('server_error', 'Unable to add file ' + hash);
       return new DelugeTorrent(this.opts, hash, {});
     });
