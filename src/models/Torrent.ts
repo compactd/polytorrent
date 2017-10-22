@@ -1,24 +1,23 @@
-
-import ClientRequest from './ClientRequest';
 import {EventEmitter} from 'events';
 
 export type TorrentProps = Partial<{
-  progress: string;
+  progress: number;
+  eta: number;
   name: string;
   uploadRate: number;
   downloadRate: number;
-  status: 'queueing' | 'downloading' | 'seeding' | 'errored' | 'inactive';
+  status: 'queuing' | 'downloading' | 'seeding' | 'errored' | 'inactive';
 }>
 
-export default abstract class Torrent extends EventEmitter{
-  protected Request: typeof ClientRequest;
-  protected hash: string;
+export default abstract class Torrent<T> extends EventEmitter{
+  protected opts: T;
+  protected _hash: string;
   protected props: TorrentProps;
 
-  constructor (request: typeof ClientRequest, hash: string, props: TorrentProps) {
+  constructor (opts: T, hash: string, props: TorrentProps) {
     super();
-    this.Request = request;
-    this.hash = hash;
+    this.opts = opts;
+    this._hash = hash;
     this.props = props;
   }
   abstract liveFeed (): void;
@@ -45,6 +44,9 @@ export default abstract class Torrent extends EventEmitter{
   }
   get status () {
     return this.props.status;
+  }
+  get hash () {
+    return this._hash;
   }
   
 }

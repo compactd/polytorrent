@@ -2,13 +2,7 @@ import ClientRequest, {ClientResponse} from '../models/ClientRequest';
 import fetch from 'node-fetch';
 import {parse} from 'set-cookie-parser';
 import ClientError from '../models/ClientError';
-
-export interface Options {
-  host: string;
-  port: number;
-  endpoint: string;
-  password: string;
-}
+import Options from './options';
 
 export interface ClientRequestOptions {
   id: string;
@@ -74,7 +68,9 @@ export default class DelugeClientRequest extends ClientRequest<Options, ClientRe
           if (res.status === 500) return Promise.reject(new ClientError('server_error', 'unexpected server 500 error'));
           throw new ClientError('unknown_error', 'An unknown error occured');
         }
-        const {result} = await res.json();
+        const body = await res.text();
+        
+        const {result} = JSON.parse(body);
 
         Object.assign(results, {[req.id]: result});
       }

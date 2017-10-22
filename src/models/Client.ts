@@ -1,5 +1,3 @@
-
-import ClientRequest from './ClientRequest';
 import Torrent from './Torrent';
 
 export interface AddTorrentOptions {
@@ -7,23 +5,29 @@ export interface AddTorrentOptions {
   /**
    * If true, the torrent client won't create a directory for multi torrents
    */
-  baseDirectory: boolean;
+  baseDirectory?: boolean;
+  tempDirectory?: string;
 }
 
-export default abstract class Client {
-  protected Request: typeof ClientRequest;
-  constructor (request: typeof ClientRequest) {
-    this.Request = request;
+export default abstract class Client<T> {
+  protected opts: any;
+  constructor (opts: T) {
+    this.opts = opts;
   }
   /**
    * Connects to the client
    */
   abstract connect (): Promise<void>;
 
-  abstract getTorrents (): Promise<Torrent[]>;
+  abstract getTorrents (): Promise<Torrent<T>[]>;
 
-  abstract addFile (torrent: string | Buffer, opts: AddTorrentOptions):  Promise<Torrent>;
+  async addFile (torrent: (string | Buffer), opts: AddTorrentOptions):  Promise<Torrent<T>> {
+    const [file] = await this.addFiles([torrent], opts);
+    return file;
+  }
 
-  abstract addMagnet (torrent: string, opts: AddTorrentOptions):  Promise<Torrent>;
+  abstract addFiles (torrent: (string | Buffer)[], opts: AddTorrentOptions):  Promise<Torrent<T>[]>;
+
+  abstract addMagnet (torrent: string, opts: AddTorrentOptions):  Promise<Torrent<T>>;
 
 }
