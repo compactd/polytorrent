@@ -18,15 +18,20 @@
   },
   "homepage": "https://github.com/bitjson/typescript-starter#readme",
   "devDependencies": {
+    "@types/mocha": "^2.2.43",
     "@types/node": "^8.0.46",
     "@types/node-fetch": "^1.6.7",
+    "@types/set-cookie-parser": "0.0.2",
     "@types/tape": "^4.2.30",
     "tap-diff": "^0.1.1",
     "tap-notify": "^1.0.0",
+    "tap-spec": "^4.1.1",
     "tape": "^4.8.0",
+    "tape-watch": "^2.3.0",
     "typescript": "^2.5.3"
   },
   "dependencies": {
-    "node-fetch": "^1.7.3"
+    "node-fetch": "^1.7.3",
+    "set-cookie-parser": "^2.0.0"
   }
 }

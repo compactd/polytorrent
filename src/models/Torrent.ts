@@ -1,5 +1,6 @@
 
 import ClientRequest from './ClientRequest';
+import {EventEmitter} from 'events';
 
 export type TorrentProps = Partial<{
   progress: string;
@@ -9,17 +10,18 @@ export type TorrentProps = Partial<{
   status: 'queueing' | 'downloading' | 'seeding' | 'errored' | 'inactive';
 }>
 
-export default abstract class Torrent {
+export default abstract class Torrent extends EventEmitter{
   protected Request: typeof ClientRequest;
   protected hash: string;
   protected props: TorrentProps;
 
   constructor (request: typeof ClientRequest, hash: string, props: TorrentProps) {
+    super();
     this.Request = request;
     this.hash = hash;
     this.props = props;
   }
-  
+  abstract liveFeed (): void;
   /**
    * Update the props with the client
    */
