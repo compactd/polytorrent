@@ -115,5 +115,9 @@ export default class DelugeClient extends Client<Options> {
   addMagnet(torrent: string, opts: AddTorrentOptions): Promise<DelugeTorrent> {
     throw new Error("Method not implemented.");
   }
-  
+  async getTorrent (hash: string): Promise<DelugeTorrent> {
+    const torrent = new DelugeTorrent(this.opts, hash, {});
+    await torrent.update();
+    return torrent;
+  }
 }

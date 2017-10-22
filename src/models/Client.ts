@@ -30,4 +30,6 @@ export default abstract class Client<T> {
 
   abstract addMagnet (torrent: string, opts: AddTorrentOptions):  Promise<Torrent<T>>;
 
+  abstract getTorrent (hash: string): Promise<Torrent<T>>;
+
 }

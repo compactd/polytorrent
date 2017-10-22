@@ -6,6 +6,7 @@ require('util.promisify/shim')();
 import * as path from 'path';
 import * as fs from 'fs';
 import * as util from 'util';
+import * as sinon from 'sinon';
 
 // import {ErrorTypes} from '../models/ClientError';
 
@@ -59,6 +60,30 @@ test('DelugeClient.getTorrents() - returns the newly added torrents', async (t) 
   t.is(torrents[0].name, 'ubuntu-17.10-desktop-amd64.iso', 'should have the torrent name');
   t.is(torrents[1].name, 'archlinux-2017.10.01-x86_64.iso', 'should have the torrent name');
 
+  t.end();
+});
+
+test('DelugeTorrent.liveFeed() - emits events', async (t) => {
+  const hash = '9228628504cc40efa57bf38e85c9e3bd2c572b5b';
+  const timeout = util.promisify(setTimeout);
+  const client = new DelugeClient({host: 'localhost', port: 8112, password: 'deluge'});
+
+  await client.connect();
+  const torrent = await client.getTorrent(hash);
+
+  console.log(torrent);
+  
+  const pauseStub = sinon.stub();
+  torrent.on('pause', pauseStub);
+  torrent.liveFeed(100);
+
+  await timeout(200);
+
+  await torrent.pause();
+
+  await timeout(200);
+
+  t.is(pauseStub.calledOnce, true, 'Paused called');
   t.end();
 });
 
