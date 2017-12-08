@@ -22,6 +22,7 @@
     "@types/mocha": "^2.2.43",
     "@types/node": "^8.0.46",
     "@types/node-fetch": "^1.6.7",
+    "@types/p-queue": "^1.1.0",
     "@types/parse-torrent": "^5.8.1",
     "@types/set-cookie-parser": "0.0.2",
     "@types/sinon": "^2.3.6",
@@ -36,6 +37,7 @@
   "dependencies": {
     "deep-diff": "^0.3.8",
     "node-fetch": "^1.7.3",
+    "p-queue": "^2.3.0",
     "parse-torrent": "^5.8.3",
     "set-cookie-parser": "^2.0.0",
     "sinon": "^4.0.1",

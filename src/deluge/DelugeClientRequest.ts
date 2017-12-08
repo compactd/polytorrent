@@ -3,6 +3,7 @@ import fetch from 'node-fetch';
 import {parse} from 'set-cookie-parser';
 import ClientError from '../models/ClientError';
 import Options from './options';
+import * as PQueue from 'p-queue';
 
 export interface ClientRequestOptions {
   id: string;
@@ -14,8 +15,13 @@ export type ConnectParams = {
   cookie: string;
 };
 
+const queue = new PQueue();
+
 export default class DelugeClientRequest extends ClientRequest<Options, ClientRequestOptions, ConnectParams> {
-  async login(): Promise<ConnectParams> {
+  login(): Promise<ConnectParams> {
+    return queue.add(this._login.bind(this));
+  }
+  private async _login(): Promise<ConnectParams> {
     try {
       const res = await fetch(`http://${this.opts.host}:${this.opts.port}/${this.opts.endpoint || 'json'}`, {
         method: 'POST',
@@ -42,7 +48,6 @@ export default class DelugeClientRequest extends ClientRequest<Options, ClientRe
       const cookie = parse(res.headers.get('set-cookie'))[0].value;
       return {cookie};
     } catch (err) {
-      
       if (err.code === 'ENOTFOUND') {
         throw new ClientError('offline_server', 'Cannot reach server: ' + err.code);
       }
@@ -53,6 +58,9 @@ export default class DelugeClientRequest extends ClientRequest<Options, ClientRe
     return {id, method, params};
   }
   send(): Promise<ClientResponse> {
+    return queue.add(this._send.bind(this));
+  }
+  private _send(): Promise<ClientResponse> {
     const requests = this.requests.map((req, index) => {
       return async (results: any) => {
         const res = await fetch(`http://${this.opts.host}:${this.opts.port}/${this.opts.endpoint || 'json'}`, {
