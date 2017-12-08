@@ -39,6 +39,7 @@
   "dependencies": {
     "deep-diff": "^0.3.8",
     "node-fetch": "^1.7.3",
+    "p-queue": "^2.3.0",
     "parse-torrent": "^5.8.3",
     "set-cookie-parser": "^2.0.0",
     "sinon": "^4.0.1",
